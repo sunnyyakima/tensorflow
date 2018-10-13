@@ -1,0 +1,2 @@
+# tensorflow
+notes for tensorflow
