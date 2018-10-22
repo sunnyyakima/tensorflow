@@ -1,1 +1,6 @@
 https://colab.research.google.com/notebooks/welcome.ipynb
+
+from google.colab import drive
+drive.mount('/content/drive')
+
+img = cv.imread('computer_vision/lesson_03/pic_03/home.jpg')
