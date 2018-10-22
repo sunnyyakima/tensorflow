@@ -1,3 +1,54 @@
 
 https://www.datacamp.com/community/tutorials/autoencoder-keras-tutorial
 
+from google.colab import drive
+drive.mount('/content/drive')
+
+import os
+from keras.layers import Input, Dense
+from keras.models import Model
+from keras import regularizers
+import numpy as np
+from numpy import genfromtxt
+
+os.chdir("/content/drive/My Drive/bladder_autoencoder")
+!ls
+
+my_data = genfromtxt('shuffled.txt', delimiter=',')
+my_data.shape
+print(my_data[0][0])
+np.isnan(my_data)
+
+input_expr = Input(shape=(18112,))
+encoded = Dense(500, activation='relu', activity_regularizer=regularizers.l1(10e-6))(input_expr)  # activity_regularizer=regularizers.l1(10e-2))(input_img)
+encoded = Dense(100, activation='relu')(encoded) # ==> hidden layer
+decoded = Dense(500, activation='relu')(encoded)
+decoded = Dense(18112, activation='sigmoid')(decoded)
+
+training_data = my_data[:350]
+testing_data  = my_data[350:]
+
+np.isnan(training_data)
+
+autoencoder = Model(input_expr, decoded)
+autoencoder.compile(optimizer='adadelta', loss='mse')  # loss='mse'
+
+autoencoder.fit(training_data, training_data, epochs=20, batch_size=10, shuffle=True, validation_data=(testing_data, testing_data))
+                
+# get hidden layer
+whole_data = genfromtxt('Three_GSE_data_t.csv', delimiter=',')
+
+autoencoder.layers
+from keras import backend as K
+get_activations = K.function([autoencoder.layers[0].input], [autoencoder.layers[2].output])
+xx_latent = get_activations([whole_data])
+
+outf = open("hiddenlayer.txt", "w")
+for idx in xx_latent[0]:
+  for j in idx:
+#    print(str(j)+"\t")
+    outf.write(str(j)+"\t")
+#  print("\n")
+  outf.write("\n")
+outf.close()
+#xx_latent[0]
